@@ -15,6 +15,9 @@ class Node
 
   def add_follower(node)
     @followers << node
+    @followers.each do |follower|
+      follower.add_follower(node)
+    end
   end
 
   def receive_entry(msg)
