@@ -6,6 +6,7 @@ class NewNode
     if leader
       @role = :follower
       leader.handle_new_cluster_member(self)
+      start_timer
     else
       @role = :leader
       add_to_cluster(self)
@@ -112,11 +113,13 @@ class NewNode
 
   def heartbeat
     # Just calls append_entry
-    while true
-      followers = get_followers
-      followers.each do |f|
-        f = Thread.new do
-          f.append_entry
+    Thread.new do
+      while true
+        followers = get_followers
+        followers.each do |f|
+          f = Thread.new do
+            f.append_entry
+          end
         end
       end
     end
@@ -150,10 +153,12 @@ class NewNode
   def start_timer
     new_timer = Timers::Group.new
     @current_timer = new_timer
-    rnd = Random.new
-    rnd_time = rnd.rand((15/100)..(30/100))
-    p1 = new_timer.now_and_every(rnd_time) { node_timeout }
-    loop { new_timer.wait }
+    Thread.new do
+      rnd = Random.new
+      rnd_time = rnd.rand((15/100)..(30/100))
+      p1 = new_timer.now_and_every(rnd_time) { node_timeout }
+      loop { new_timer.wait }
+    end
   end
 
   def stop_timer

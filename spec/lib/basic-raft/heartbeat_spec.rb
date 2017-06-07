@@ -12,11 +12,14 @@ describe "timer" do
 
   context "follower timeout" do
     # start election
+    before { f1.start_timer }
     it "starts an election on timeout" do
       # random between .15 and .3?
-      EM.add_periodic_timer("random time") { f1.follower_timeout }
-      clock.tick("random time")
-      expect(f1).to receive(:follower_timeout)
+      # how to use start_timer here?
+      sleep 2
+      expect(f1).to have_received(:node_timeout)
+      expect(f1).to receive(:node_timeout)
+      expect(STDOUT).to receive(:puts).with('Start new election')
     end
   end
 
@@ -26,7 +29,10 @@ describe "timer" do
     # should heartbeat happen endlessly?
     it "resets followers timeout" do
       # expect followers to reset timeout, so receive reset timer request
-
+      followers.each do |f|
+        expect(f).to receive(:append_entry)
+        expect(f).to receive(:reset_timer)
+      end
     end
   end
 
