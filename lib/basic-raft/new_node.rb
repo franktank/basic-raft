@@ -10,6 +10,8 @@ class NewNode
     end
   end
 
+  ###### Handling cluster ######
+
   def keep_cluster_unique
     @cluster.uniq!
   end
@@ -33,6 +35,11 @@ class NewNode
     keep_cluster_unique
   end
 
+  ##################################
+
+
+  ###### Finding followers and leaders ######
+
   def is_follower?
     @role == :follower
   end
@@ -55,6 +62,8 @@ class NewNode
     followers
   end
 
+
+  #############################################
   private
 
   attr_accessor :cluster
