@@ -84,11 +84,25 @@ class NewNode
     leader.receive_entry(msg)
   end
 
-  def append_entry(msg)
+  def append_entry(msg = nil)
+    if msg
     @log << msg
+    else
+      # Reset timer
+    end
   end
 
   ################################
+
+  ###### Timer ######
+  def heartbeat
+    # Just calls append_entry
+  end
+
+  def follower_timeout
+    # Initiates election -> candidate and stuff
+  end
+  ###################
 
   private
 
