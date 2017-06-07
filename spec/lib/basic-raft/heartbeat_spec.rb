@@ -1,5 +1,6 @@
 require_relative "../../../lib/basic-raft/new_node"
-
+# @TODO FIGURE OUT HOW TO END SUBJECT / LEADER SO HEARTBEATS ARE OVER
+# @TODO WHY ARENT FOLLOWERS RECEIVING APPEND ENTRY?
 describe "timer" do
 
   subject { NewNode.new }
@@ -20,9 +21,8 @@ describe "timer" do
       allow(f1).to receive(:node_timeout)
     end
     it "starts an election on timeout" do
-      # random between .15 and .3?
-      # how to use start_timer here?
-      sleep 1
+      # HOW DO I END THE HEARTBEATS ??????? :(
+      # Leader is alive and sending heartbeats so test fails?
       expect(f1).to have_received(:node_timeout)
       # expect(f1).to receive(:node_timeout)
       # expect(STDOUT).to receive(:puts).with('Start new election')
@@ -30,18 +30,20 @@ describe "timer" do
   end
 
   context "leader heartbeat" do
+    # Does the thread interfere with the test?
+    # How do threads work with RSpec?
+    # Printing in heartbeat appears in terminal
+
     before { subject.heartbeat }
     before do
-      allow(f1).to receive(:append_entry)
-      allow(f1).to receive(:reset_timer)
-    end
-    # maintain authority
-    # should heartbeat happen endlessly?
-    it "resets followers timeout" do
-      # expect followers to reset timeout, so receive reset timer request
       followers.each do |f|
-        expect(f1).to have_received(:append_entry)
-        expect(f1).to have_received(:reset_timer)
+        allow(f).to receive(:append_entry)
+      end
+    end
+
+    it "resets followers timeout" do
+      followers.each do |f|
+        expect(f).to have_received(:append_entry)
       end
     end
   end

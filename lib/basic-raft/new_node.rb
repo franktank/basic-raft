@@ -138,12 +138,14 @@ class NewNode
   end
 
   def node_timeout
-    if role == :leader
+    if @role == :leader
       p "Does nothing"
-    elsif role == :candidate
+    elsif @role == :candidate
       p "Start new election"
-    elsif role == :follower
+    elsif @role == :follower
       p "Start new election"
+    else
+      p "fuck u"
     end
   end
 
@@ -158,8 +160,8 @@ class NewNode
     Thread.new do
       rnd = Random.new
       rnd_time = rnd.rand((15/100)..(30/100))
-      p1 = new_timer.now_and_every(rnd_time) { node_timeout }
-      loop { new_timer.wait }
+      p1 = new_timer.after(rnd_time) { node_timeout }
+      @current_timer.wait
     end
   end
 
