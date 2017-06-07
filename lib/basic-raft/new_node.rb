@@ -1,6 +1,7 @@
 class NewNode
   def initialize(leader = nil)
     @cluster = []
+    @log = []
     if leader
       @role = :follower
       leader.handle_new_cluster_member(self)
@@ -64,9 +65,32 @@ class NewNode
 
   #############################################
 
+  ###### Node communication #######
 
+  def receive_entry(msg)
+    if @role == :leader
+      append_entry(msg)
+      followers = get_followers
+      followers.each do |follower|
+        follower.append_entry(msg)
+      end
+    elsif @role == :follower
+      redirect_message_to_leader(msg)
+    end
+  end
+
+  def redirect_message_to_leader(msg)
+    leader = get_leader
+    leader.receive_entry(msg)
+  end
+
+  def append_entry(msg)
+    @log << msg
+  end
+
+  ################################
 
   private
 
-  attr_accessor :cluster
+  attr_accessor :cluster, :log
 end

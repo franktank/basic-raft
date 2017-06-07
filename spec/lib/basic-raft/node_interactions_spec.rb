@@ -10,10 +10,11 @@ describe "node interactions" do
 
   context "cluster membership information" do
     it 'everyone knows the followers' do
-      expect(subject.get_followers).to eq followers
       clust.each do |c|
         expect(c.get_followers).to eq followers
       end
+
+      expect(subject.get_followers).to eq followers
     end
 
     it 'everyone knows who is in the cluster' do
@@ -28,6 +29,32 @@ describe "node interactions" do
       end
 
       expect(subject.get_leader).to eq subject
+    end
+  end
+
+  context "leader receives an entry" do
+    let(:msg) { 'foo' }
+    before { subject.receive_entry(msg) }
+
+    it "appends to its own log" do
+      expect(subject.send(:log)).to eq ([msg])
+    end
+
+    it "sends request to followers to append to log" do
+       followers.each do |follower|
+         expect(follower.send(:log)).to eq ([msg])
+       end
+    end
+  end
+
+  context "followers receieves an entry" do
+    let(:msg) { 'foo' }
+    before { f1.receive_entry(msg) }
+    it "redirects entry to leader" do
+      followers.each do |follower|
+        expect(follower.send(:log)).to eq ([msg])
+      end
+      expect(subject.send(:log)).to eq ([msg])
     end
   end
 end
