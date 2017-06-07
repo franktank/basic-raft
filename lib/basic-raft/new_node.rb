@@ -87,9 +87,10 @@ class NewNode
 
   def append_entry(msg = nil)
     if msg
-    @log << msg
+      @log << msg
     else
       # Reset timer using parallel?
+      reset_timer
     end
   end
 
@@ -100,18 +101,23 @@ class NewNode
   def heartbeat
     # Just calls append_entry
     while true
-      # Thread for each follower?
-      # Reset time for each follower
+      followers = get_followers
+      followers.each do |f|
+        f = Thread.new do
+          f.append_entry
+        end
+      end
     end
   end
 
   def follower_timeout
     # Initiates election -> candidate and stuff
-
+    p "Initiate election!"
   end
 
   def candidate_timeout
     # Starts new election
+    p "Initiate another election!"
   end
 
   def node_timeout
