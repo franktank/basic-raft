@@ -62,8 +62,10 @@ class NewNode
     followers
   end
 
-
   #############################################
+
+
+
   private
 
   attr_accessor :cluster
