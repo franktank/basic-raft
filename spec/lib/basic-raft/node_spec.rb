@@ -110,28 +110,6 @@ end
 #
 
 
-describe 'node test' do
-
-  subject { Node.new }
-  let(:f1) { Node.new(subject) }
-  let(:f2) { Node.new(subject) }
-  let(:f3) { Node.new(subject) }
-  let(:followers) { [f1,f2,f3 ]}
-
-  it 'everyone recognize the leader' do
-    followers.each do |f|
-      expect(f.send(:leader)).to eq subject
-    end
-
-    expect(subject.send(:leader)).to eq subject
-  end
-
-  it 'everyone knows the followers' do
-    expect(subject.send(:followers)).to eq followers
-  end
-end
-
-
 
 # describe 'updating the log' do
 #   let!(:f1) { Node.new(:follower, md) }
