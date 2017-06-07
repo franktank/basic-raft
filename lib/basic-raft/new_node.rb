@@ -130,11 +130,12 @@ class NewNode
   end
 
   def start_timer
+    new_timer = Timers::Group.new
+    @current_timer = new_timer
     rnd = Random.new
     rnd_time = rnd.rand((15/100)..(30/100))
-    EventMachine.run do
-      EM.add_timer(rnd_time) { node_timeout }
-    end
+    p1 = new_timer.now_and_every(rnd_time) { node_timeout }
+    loop { new_timer.wait }
   end
 
   def stop_timer
