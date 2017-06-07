@@ -9,7 +9,19 @@ class NewNode
     else
       @role = :leader
       add_to_cluster(self)
+      heartbeat
     end
+
+    # constantly checking to see if its a leader?
+    # or just do heartbeat in else, and during election run heartbeat on new leader
+    # Thread.new do
+    #   while true
+    #     if role == :leader
+    #       heartbeat
+    #     end
+    #   end
+    end
+
   end
 
   ###### Handling cluster ######
