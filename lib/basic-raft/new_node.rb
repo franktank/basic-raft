@@ -1,5 +1,6 @@
 class NewNode
   def initialize(leader = nil)
+    @current_timer = Timers::Group.new
     @cluster = []
     @log = []
     if leader
@@ -88,20 +89,58 @@ class NewNode
     if msg
     @log << msg
     else
-      # Reset timer
+      # Reset timer using parallel?
     end
   end
 
   ################################
-
+  # timer thread????
   ###### Timer ######
+
   def heartbeat
     # Just calls append_entry
+    while true
+      # Thread for each follower?
+      # Reset time for each follower
+    end
   end
 
   def follower_timeout
     # Initiates election -> candidate and stuff
+
   end
+
+  def candidate_timeout
+    # Starts new election
+  end
+
+  def node_timeout
+    if role == :leader
+      p "Does nothing"
+    elsif role == :candidate
+      p "Start new election"
+    elsif role == :follower
+      p "Start new election"
+    end
+  end
+
+  def reset_timer
+    stop_timer
+    start_timer
+  end
+
+  def start_timer
+    rnd = Random.new
+    rnd_time = rnd.rand((15/100)..(30/100))
+    EventMachine.run do
+      EM.add_timer(rnd_time) { node_timeout }
+    end
+  end
+
+  def stop_timer
+    @current_timer.cancel
+  end
+
   ###################
 
   private
