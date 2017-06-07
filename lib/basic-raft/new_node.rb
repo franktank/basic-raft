@@ -1,3 +1,5 @@
+require 'timers'
+
 class NewNode
   def initialize(leader = nil)
     @current_timer = Timers::Group.new
@@ -23,7 +25,7 @@ class NewNode
     #   end
     end
 
-  end
+  # end
 
   ###### Handling cluster ######
 

@@ -1,6 +1,6 @@
+require_relative "../../../lib/basic-raft/new_node"
+
 describe "timer" do
-  before { clock.stub }
-  after { clock.reset }
 
   subject { NewNode.new }
   let!(:f1) { NewNode.new(subject) }
@@ -16,7 +16,7 @@ describe "timer" do
     it "starts an election on timeout" do
       # random between .15 and .3?
       # how to use start_timer here?
-      sleep 2
+      sleep 1
       expect(f1).to have_received(:node_timeout)
       expect(f1).to receive(:node_timeout)
       expect(STDOUT).to receive(:puts).with('Start new election')
@@ -39,7 +39,7 @@ describe "timer" do
   context "candidate timeout" do
     # split vote
     it "starts a new election on timeout" do
-
+      pending "candidate not implemented yet"
     end
   end
 end
