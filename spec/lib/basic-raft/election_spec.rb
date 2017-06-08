@@ -13,22 +13,32 @@ describe "election" do
 
 
   context "obtains majority votes" do
+    before { f1.start_election }
     it "becomes leader" do
-      expect(subject.get_leader).to eq(subject)
+      expect(subject.get_leader).to eq(f1)
     end
 
     before do
-      followers.each do |f|
-        allow(f).to receive(:append_entry)
+      clust.each do |c|
+        allow(c).to receive(:append_entry)
       end
     end
+
     it "sends append entries to new followers" do
-      new_leader = subject.get_leader
       # All new followers should have received :append_entry
+      f2.become_leader
+      new_leader = f2.get_leader
+      new_followers = new_leader.get_followers
+      new_followers.each do |nf|
+        expect(nf).to have_received(:append_entry)
+      end
     end
 
     it "everyone knows who the new leader is" do
       # expect everyone to return the same leader
+      clust.each do |c|
+        expect(c.get_leader).to eq(f1)
+      end
     end
 
     it "new leader is not the same leader from past term" do

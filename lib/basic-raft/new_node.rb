@@ -17,13 +17,11 @@ class NewNode
       leader.handle_new_cluster_member(self)
       start_timer
       @current_term = leader.get_current_term # ???
-      p "INITIAL START TIMER CALL"
     else
       @role = :leader
       add_to_cluster(self)
       heartbeat
       @current_term = 0 # or 1?
-      p "INITIAL HEARTBEAT CALL"
     end
   end
 
@@ -114,7 +112,6 @@ class NewNode
     else
       # Reset timer using parallel?
       reset_timer
-      p "RESET"
     end
   end
 
@@ -128,7 +125,6 @@ class NewNode
     Thread.new do
       @leader_alive = true
       while @leader_alive
-        p "heartbeat"
         followers = get_followers
         followers.each do |f|
           f.append_entry
@@ -141,7 +137,6 @@ class NewNode
   def kill_heartbeat
     # End all f threads created too
     @leader_alive = false
-    p "HEARTBEAT KILLED"
   end
 
   # @TODO: just one timeout for both cand and follower?
@@ -183,7 +178,6 @@ class NewNode
       rnd_time = rnd.rand((15/100)..(30/100))
       p1 = new_timer.after(2) do
          node_timeout
-         p "TIMEOUT TRIGGERED"
       end
       @current_timer.wait
     end
@@ -202,9 +196,11 @@ class NewNode
     num_votes = 0
     reset_timer
     @cluster.each do |c|
-      if c.vote_for(self) then num_votes += 1
+      if c.vote_for(self)
+        num_votes += 1
+      end
     end
-    if num_votes > @cluster.count
+    if num_votes > @cluster.count / 2
       leader = get_leader
       leader.revert_to_follower
       become_leader
@@ -218,15 +214,22 @@ class NewNode
 
   def become_leader
     @role = :leader
+    followers = get_followers
+    followers.each do |f|
+      f.append_entry
+    end
   end
 
   def vote_for(node)
+    vote_passed = false
+    return vote_passed if @current_term > node.get_current_term
+
     if @voted_for == nil || @voted_for == node
       @voted_for = node
-      true
-    else
-      false
+      vote_passed = true
     end
+
+    vote_passed
   end
   ################################
 
