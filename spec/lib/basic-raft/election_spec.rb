@@ -62,4 +62,14 @@ describe "election" do
       # expect
     end
   end
+
+  context "current leader dies" do
+    it "starts a new election" do
+
+    end
+
+    it "a new leader is chosen from the election" do
+      
+    end
+  end
 end
