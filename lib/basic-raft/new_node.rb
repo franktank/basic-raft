@@ -218,6 +218,18 @@ class NewNode
     followers.each do |f|
       f.append_entry
     end
+    reset_followers
+  end
+
+  def reset_followers
+    followers = get_followers
+    followers.each do |f|
+      f.reset_voted_for
+    end
+  end
+
+  def reset_voted_for
+    @voted_for = nil
   end
 
   def vote_for(node)
