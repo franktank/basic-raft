@@ -4,7 +4,7 @@ require_relative "../../../lib/basic-raft/new_node"
 describe "timer" do
 
   subject { NewNode.new }
-  let(:f1) { NewNode.new(subject) }
+  let!(:f1) { NewNode.new(subject) }
   let(:f2) { NewNode.new(subject) }
   let(:f3) { NewNode.new(subject) }
   let(:clust) { [subject, f1, f2, f3] }
@@ -21,51 +21,40 @@ describe "timer" do
     end
     it "starts an election on timeout" do
       subject.kill_heartbeat
-      # HOW DO I END THE HEARTBEATS ??????? :(
-      # Leader is alive and sending heartbeats so test fails?
+      sleep 2.1 # need to keep program running
       expect(f1).to have_received(:node_timeout)
-      # expect(f1).to receive(:node_timeout)
-      # expect(STDOUT).to receive(:puts).with('Start new election')
     end
   end
 
-  # context "leader heartbeat" do
-  #   # Does the thread interfere with the test?
-  #   # How do threads work with RSpec?
-  #   # Printing in heartbeat appears in terminal
-  #
-  #   before { subject.heartbeat }
-  #   before do
-  #     followers.each do |f|
-  #       allow(f).to receive(:append_entry)
-  #     end
-  #   end
+  context "leader heartbeat" do
+    before do
+      followers.each do |f|
+        allow(f).to receive(:append_entry)
+      end
+    end
 
-  #   it "is constantly beating if cluster contains a single leader" do
-  #
-  #   end
-  #
-  #   it "resets followers timeout" do
-  #     followers.each do |f|
-  #       expect(f).to have_received(:append_entry)
-  #     end
-  #   end
-  # end
-  #
-  # context "leader and follower timeout" do
-  #   it "triggers timeout when cluster is a leader and a follower" do
-  #
-  #   end
-  #
-  #   it "a follower receives timeout when cluster is a leader and 3 followers" do
-  #
-  #   end
-  # end
-  #
-  # context "candidate timeout" do
-  #   # split vote
-  #   it "starts a new election on timeout" do
-  #     pending "candidate not implemented yet"
-  #   end
-  # end
+    it "resets followers timeout" do
+      sleep 0.6
+      followers.each do |f|
+        expect(f).to have_received(:append_entry).at_least(1).times
+      end
+    end
+  end
+
+  context "leader and follower timeout" do
+    it "triggers timeout when cluster is a leader and a follower" do
+
+    end
+
+    it "a follower receives timeout when cluster is a leader and 3 followers" do
+
+    end
+  end
+
+  context "candidate timeout" do
+    # split vote
+    it "starts a new election on timeout" do
+      pending "candidate not implemented yet"
+    end
+  end
 end

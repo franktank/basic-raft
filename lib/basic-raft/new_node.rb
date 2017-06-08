@@ -5,29 +5,19 @@ class NewNode
     @current_timer = Timers::Group.new
     @cluster = []
     @log = []
-    @heartbeat_threads = []
-    @timer_thread
+    @leader_alive = false
     if leader
       @role = :follower
       leader.handle_new_cluster_member(self)
       start_timer
-      p "TIMER"
+      p "INITIAL START TIMER CALL"
     else
       @role = :leader
       add_to_cluster(self)
       heartbeat
-      p "HEARTBEAT"
+      p "INITIAL HEARTBEAT CALL"
     end
-
-    # constantly checking to see if its a leader?
-    # or just do heartbeat in else, and during election run heartbeat on new leader
-    # Thread.new do
-    #   while true
-    #     if role == :leader
-    #       heartbeat
-    #     end
-    #   end
-    end
+  end
 
   # end
 
@@ -110,7 +100,7 @@ class NewNode
     else
       # Reset timer using parallel?
       reset_timer
-      p "RESET TIMER CALLED"
+      p "RESET"
     end
   end
 
@@ -118,30 +108,26 @@ class NewNode
   # timer thread????
   ###### Timer ######
 
+  # Implementation is all janked because of threads to simulate the
   def heartbeat
-    # Just calls append_entry
-    p "HEARTBEAT CALLED"
-    @heartbeat_threads << Thread.new do
-      while true
+    # thread?
+    Thread.new do
+      @leader_alive = true
+      while @leader_alive
+        p "heartbeat"
         followers = get_followers
         followers.each do |f|
-          @heartbeat_threads << Thread.new do
-            f.append_entry
-            p "APPEND ENTRY CALLED"
-          end
+          f.append_entry
         end
+        sleep 0.5
       end
     end
   end
 
   def kill_heartbeat
-    # End heartbeat by ending the loop
-    p @heartbeat_threads
-    @heartbeat_threads.each do |hbt|
-      hbt.exit
-      p "THREAD TERMINATED"
-    end
     # End all f threads created too
+    @leader_alive = false
+    p "HEARTBEAT KILLED"
   end
 
   def follower_timeout
@@ -172,22 +158,21 @@ class NewNode
   end
 
   def start_timer
-    # new_timer = Timers::Group.new
-    # @current_timer = new_timer
-    @timer_thread = Thread.new do
+    Thread.new do
       new_timer = Timers::Group.new
       @current_timer = new_timer
       rnd = Random.new
       rnd_time = rnd.rand((15/100)..(30/100))
-      p1 = new_timer.after(rnd_time) { node_timeout }
+      p1 = new_timer.after(2) do
+         node_timeout
+         p "TIMEOUT TRIGGERED"
+      end
       @current_timer.wait
-      p "TIMEOUT TRIGGERED"
     end
   end
 
   def stop_timer
     @current_timer.cancel
-    @timer_thread.exit
   end
 
   ###################
