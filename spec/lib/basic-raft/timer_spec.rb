@@ -44,6 +44,8 @@ describe "timer" do
     # split vote
     it "starts a new election on timeout" do
       pending "candidate not implemented yet"
+      # expect node_timeout to be receieved
+      # expect start_election to be received
     end
   end
 end
