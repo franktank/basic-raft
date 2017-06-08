@@ -144,9 +144,9 @@ class NewNode
     if @role == :leader
       p "Does nothing"
     elsif @role == :candidate
-      p "Start new election"
+      candidate_timeout
     elsif @role == :follower
-       "Start new election"
+       follower_timeout
     else
       p "Unknown role"
     end

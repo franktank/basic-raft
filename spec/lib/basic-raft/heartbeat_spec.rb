@@ -1,6 +1,7 @@
 require_relative "../../../lib/basic-raft/new_node"
-# @TODO FIGURE OUT HOW TO END SUBJECT / LEADER SO HEARTBEATS ARE OVER
-# @TODO WHY ARENT FOLLOWERS RECEIVING APPEND ENTRY?
+# @TODO Figure out how to test when multiple followers and leaders
+# @TODO Set timer of one node to be lower so expect that to timeout?
+# @TODO Best way to test?
 describe "timer" do
 
   subject { NewNode.new }
@@ -10,9 +11,6 @@ describe "timer" do
   let(:clust) { [subject, f1, f2, f3] }
   let(:followers) { [f1,f2,f3 ] }
   let(:leader) { subject }
-
-
-  # STUB A METHOD! Override is like we did for New!
 
   context "follower timeout" do
     # before { subject.kill_heartbeat }
@@ -27,6 +25,7 @@ describe "timer" do
   end
 
   context "leader heartbeat" do
+    # STUB A METHOD! Override is like we did for New!
     before do
       followers.each do |f|
         allow(f).to receive(:append_entry)
@@ -38,16 +37,6 @@ describe "timer" do
       followers.each do |f|
         expect(f).to have_received(:append_entry).at_least(1).times
       end
-    end
-  end
-
-  context "leader and follower timeout" do
-    it "triggers timeout when cluster is a leader and a follower" do
-
-    end
-
-    it "a follower receives timeout when cluster is a leader and 3 followers" do
-
     end
   end
 
