@@ -1,18 +1,22 @@
 require 'timers'
-
+require 'parallel'
 class NewNode
   def initialize(leader = nil)
     @current_timer = Timers::Group.new
     @cluster = []
     @log = []
+    @heartbeat_threads = []
+    @timer_thread
     if leader
       @role = :follower
       leader.handle_new_cluster_member(self)
       start_timer
+      p "TIMER"
     else
       @role = :leader
       add_to_cluster(self)
       heartbeat
+      p "HEARTBEAT"
     end
 
     # constantly checking to see if its a leader?
@@ -106,6 +110,7 @@ class NewNode
     else
       # Reset timer using parallel?
       reset_timer
+      p "RESET TIMER CALLED"
     end
   end
 
@@ -115,16 +120,28 @@ class NewNode
 
   def heartbeat
     # Just calls append_entry
-    Thread.new do
+    p "HEARTBEAT CALLED"
+    @heartbeat_threads << Thread.new do
       while true
         followers = get_followers
         followers.each do |f|
-          f = Thread.new do
+          @heartbeat_threads << Thread.new do
             f.append_entry
+            p "APPEND ENTRY CALLED"
           end
         end
       end
     end
+  end
+
+  def kill_heartbeat
+    # End heartbeat by ending the loop
+    p @heartbeat_threads
+    @heartbeat_threads.each do |hbt|
+      hbt.exit
+      p "THREAD TERMINATED"
+    end
+    # End all f threads created too
   end
 
   def follower_timeout
@@ -143,7 +160,7 @@ class NewNode
     elsif @role == :candidate
       p "Start new election"
     elsif @role == :follower
-      p "Start new election"
+       "Start new election"
     else
       p "Unknown role"
     end
@@ -155,18 +172,22 @@ class NewNode
   end
 
   def start_timer
-    new_timer = Timers::Group.new
-    @current_timer = new_timer
-    Thread.new do
+    # new_timer = Timers::Group.new
+    # @current_timer = new_timer
+    @timer_thread = Thread.new do
+      new_timer = Timers::Group.new
+      @current_timer = new_timer
       rnd = Random.new
       rnd_time = rnd.rand((15/100)..(30/100))
       p1 = new_timer.after(rnd_time) { node_timeout }
       @current_timer.wait
+      p "TIMEOUT TRIGGERED"
     end
   end
 
   def stop_timer
     @current_timer.cancel
+    @timer_thread.exit
   end
 
   ###################
