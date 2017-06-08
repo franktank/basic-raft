@@ -133,6 +133,7 @@ class NewNode
   def follower_timeout
     # Initiates election -> candidate and stuff
     p "Initiate election!"
+    @role = :candidate
   end
 
   def candidate_timeout
@@ -146,7 +147,7 @@ class NewNode
     elsif @role == :candidate
       candidate_timeout
     elsif @role == :follower
-       follower_timeout
+      follower_timeout
     else
       p "Unknown role"
     end
@@ -176,6 +177,10 @@ class NewNode
   end
 
   ###################
+
+  ####### Election Methods #######
+
+  ################################
 
   private
 
