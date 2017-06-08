@@ -69,7 +69,7 @@ describe "election" do
     end
 
     it "a new leader is chosen from the election" do
-      
+
     end
   end
 end
