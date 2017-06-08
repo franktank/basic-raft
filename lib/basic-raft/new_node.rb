@@ -1,25 +1,39 @@
 require 'timers'
 require 'parallel'
+
+# @TODO How to handle election when new leader sends append entry during election
+
 class NewNode
   def initialize(leader = nil)
     @current_timer = Timers::Group.new
     @cluster = []
     @log = []
     @leader_alive = false
+    @started_election = false # For case where append entry received from new leader during election
+    @voted_for = nil
+    @current_term
     if leader
       @role = :follower
       leader.handle_new_cluster_member(self)
       start_timer
+      @current_term = leader.get_current_term # ???
       p "INITIAL START TIMER CALL"
     else
       @role = :leader
       add_to_cluster(self)
       heartbeat
+      @current_term = 0 # or 1?
       p "INITIAL HEARTBEAT CALL"
     end
   end
 
   # end
+
+  ### Handle term ###
+  def get_current_term
+    @current_term
+  end
+  ###################
 
   ###### Handling cluster ######
 
@@ -130,15 +144,18 @@ class NewNode
     p "HEARTBEAT KILLED"
   end
 
+  # @TODO: just one timeout for both cand and follower?
   def follower_timeout
     # Initiates election -> candidate and stuff
     p "Initiate election!"
     @role = :candidate
+    start_election
   end
 
   def candidate_timeout
     # Starts new election
     p "Initiate another election!"
+    start_election
   end
 
   def node_timeout
@@ -179,7 +196,38 @@ class NewNode
   ###################
 
   ####### Election Methods #######
+  def start_election
+    @started_election = true
+    @current_term += 1
+    num_votes = 0
+    reset_timer
+    @cluster.each do |c|
+      if c.vote_for(self) then num_votes += 1
+    end
+    if num_votes > @cluster.count
+      leader = get_leader
+      leader.revert_to_follower
+      become_leader
+    end
+    @started_election = false
+  end
 
+  def revert_to_follower
+    @role = :follower
+  end
+
+  def become_leader
+    @role = :leader
+  end
+
+  def vote_for(node)
+    if @voted_for == nil || @voted_for == node
+      @voted_for = node
+      true
+    else
+      false
+    end
+  end
   ################################
 
   private
