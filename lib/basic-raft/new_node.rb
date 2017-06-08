@@ -145,7 +145,7 @@ class NewNode
     elsif @role == :follower
       p "Start new election"
     else
-      p "fuck u"
+      p "Unknown role"
     end
   end
 
