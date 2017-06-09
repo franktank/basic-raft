@@ -65,6 +65,7 @@ describe "election" do
   end
 
   context "another node becomes leader" do
+    # Add step down in append_entry
     context "RPC term is larger than candidate's current term" do
       it "current node becomes follower" do
         pending "case not handled yet"
@@ -72,12 +73,16 @@ describe "election" do
 
       it "ends the current election" do
         pending "case not handled yet"
+        # Basically changes role, then unable to become leader, since no longer candidate
       end
     end
 
     context "RPC term is smaller than candidate's current term" do
       it "remains a candidate" do
-
+        # append entry does nothing?
+        # is there response?
+        # append entries response checks for term
+        # scary changes coming up
       end
     end
   end
@@ -91,11 +96,11 @@ describe "election" do
 
   context "current leader dies" do
     it "starts a new election" do
-
+      # from timeout
     end
 
     it "a new leader is chosen from the election" do
-
+      # what if timeout from split vote?
     end
   end
 end
