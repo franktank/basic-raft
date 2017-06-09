@@ -192,10 +192,19 @@ class NewNode
     @started_election = true
     reset_timer
     @current_term += 1
-    num_votes = 0
+    @voted_for = self
+    num_votes = 1
     @cluster.each do |c|
-      if c.vote_for(self)
-        num_votes += 1
+      Thread.new do
+        while keep_requesting
+          if c != self
+            ret_term, granted = vote_for(self)
+            if granted
+              num_votes += 1
+              keep_requesting = false
+            end
+          end
+        end
       end
     end
     if num_votes > @cluster.count / 2
