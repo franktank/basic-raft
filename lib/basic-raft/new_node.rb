@@ -199,6 +199,7 @@ class NewNode
         while keep_requesting
           if c != self
             ret_term, granted = vote_for(self)
+            if
             if granted
               num_votes += 1
               keep_requesting = false
@@ -209,23 +210,27 @@ class NewNode
     end
     if num_votes > @cluster.count / 2
       leader = get_leader
-      leader.revert_to_follower
+      leader.revert_to_follower(self)
       become_leader
     end
     @started_election = false
   end
 
-  def revert_to_follower
-    @role = :follower
+  def revert_to_follower(node)
+    if node.is_candidate?
+      @role = :follower
+    end
   end
 
   def become_leader
-    @role = :leader
-    followers = get_followers
-    followers.each do |f|
-      f.append_entry
+    if @role = :candidate
+      @role = :leader
+      followers = get_followers
+      followers.each do |f|
+        f.append_entry
+      end
+      reset_followers
     end
-    reset_followers
   end
 
   def reset_followers
@@ -258,7 +263,7 @@ class NewNode
       reset_timer
     end
 
-    current_term, vote_passed
+    @current_term, vote_passed
   end
 
 
@@ -275,6 +280,10 @@ class NewNode
     @role = :follower
     @voted_for = nil
     reset_timer
+  end
+
+  def is_candidate?
+    @role == :candidate
   end
   ##################
 
