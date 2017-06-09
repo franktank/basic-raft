@@ -87,15 +87,17 @@ describe "election" do
 
       it "other node steps down" do
         # the acclaimed leader realizes it should not be the leader and steps down
-        # expdect to receive :step_down
+        # expect to receive :step_down
       end
     end
   end
 
   # this is tested in heartbeat spec
+  # control from leader and one follower, kill leader
+  # isnt this in timer spec?
   context "timeout from no leader" do
     it "starts a new election" do
-      # expect
+      # expect to receive
     end
   end
 

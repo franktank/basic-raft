@@ -236,6 +236,7 @@ class NewNode
 
   def vote_for(node)
     # need to compare last_log_term and last_log_index
+    vote_granted = false
     leader_term = node.get_current_term
     if @current_term < leader_term
       step_down(leader_term)
@@ -247,11 +248,6 @@ class NewNode
       @voted_for = node
       reset_timer
     end
-
-
-    vote_granted = false
-
-    return vote_granted if @current_term > node.get_current_term
 
     @current_term, vote_granted
   end
