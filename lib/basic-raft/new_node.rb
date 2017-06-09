@@ -12,6 +12,7 @@ class NewNode
     @started_election = false # For case where append entry received from new leader during election
     @voted_for = nil
     @current_term = 1
+    @timed_out = false
     if leader
       @role = :follower
       leader.handle_new_cluster_member(self)
@@ -142,12 +143,14 @@ class NewNode
     p "Initiate election!"
     @role = :candidate
     start_election
+    @timed_out = false
   end
 
   def candidate_timeout
     # Starts new election
     p "Initiate another election!"
     start_election
+    @timed_out = false
   end
 
   def node_timeout
@@ -175,6 +178,7 @@ class NewNode
       rnd_time = rnd.rand((15/100)..(30/100))
       p1 = new_timer.after(2) do
          node_timeout
+         @timed_out = true
       end
       @current_timer.wait
     end
@@ -194,26 +198,40 @@ class NewNode
     @voted_for = self
     num_votes = 1
     @cluster.each do |c|
+      keep_requesting = true
       Thread.new do
         while keep_requesting
           if c != self
             ret_term, granted = vote_for(self)
+            if ret_term
+              # received response
+              keep_requesting = false
+            end
             if @current_term < ret_term
               step_down(ret_term)
             else
               if granted
                 num_votes += 1
-                keep_requesting = false
               end
             end
+          else
+            keep_requesting = false
           end
         end
       end
     end
-    if num_votes > @cluster.count / 2
-      leader = get_leader
-      leader.revert_to_follower(self)
-      become_leader
+    # Threads dont finish before num votes checked is call
+    # How to handle this? is there delay to ensure or just timeout?
+    # How to track when to count votes?
+    # Handle timeout -> it shoud start new election if it doesnt receive votes in time
+    p "cluster count: #{@cluster.count}"
+    p "num_votes: #{num_votes}"
+    while !@timed_out
+      if num_votes > @cluster.count / 2
+        leader = get_leader
+        leader.revert_to_follower(self)
+        become_leader
+      end
     end
     @started_election = false
   end
@@ -225,7 +243,7 @@ class NewNode
   end
 
   def become_leader
-    if @role = :candidate
+    if @role == :candidate
       @role = :leader
       followers = get_followers
       followers.each do |f|
@@ -238,18 +256,23 @@ class NewNode
     # need to compare last_log_term and last_log_index
     vote_granted = false
     leader_term = node.get_current_term
+    p "leader_term: #{leader_term}"
+    p "self_term: #{@current_term}"
     if @current_term < leader_term
+      p "Went in step down"
       step_down(leader_term)
     end
-
     # @TODO handle last log term and last log index
-    if @current_term == leader_term && (@voted_for == nil || @voted_for == node)
-      vote_granted = true
-      @voted_for = node
-      reset_timer
+    if @current_term == leader_term
+      if @voted_for == nil || @voted_for == node
+        p "Went in vote granted"
+        vote_granted = true
+        @voted_for = node
+        reset_timer
+      end
     end
 
-    @current_term, vote_granted
+    return @current_term, vote_granted
   end
   ################################
 

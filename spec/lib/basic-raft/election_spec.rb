@@ -6,8 +6,8 @@ describe "election" do
 
   subject { NewNode.new }
   let!(:f1) { NewNode.new(subject) }
-  let(:f2) { NewNode.new(subject) }
-  let(:f3) { NewNode.new(subject) }
+  let!(:f2) { NewNode.new(subject) }
+  let!(:f3) { NewNode.new(subject) }
   let(:clust) { [subject, f1, f2, f3] }
   let(:followers) { [f1,f2,f3 ] }
   let(:leader) { subject }
@@ -15,8 +15,8 @@ describe "election" do
 
 
   context "obtains majority votes" do
-    before { f1.start_election }
-    it "becomes leader" do
+    before { f1.node_timeout }
+    it "becomes leader", focus: true do
       expect(subject.get_leader).to eq(f1)
     end
 
@@ -38,7 +38,7 @@ describe "election" do
     end
 
     it "must have an up-to-date log" do
-      pending "need to implement log replication"
+      pending "need to implement log replication / fix communication?"
     end
 
     it "everyone knows who the new leader is" do
