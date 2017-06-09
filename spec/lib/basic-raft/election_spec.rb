@@ -1,5 +1,7 @@
 require_relative "../../../lib/basic-raft/new_node"
 
+
+# @TODO Put in stuff related to log index, log term, commit index
 describe "election" do
 
   subject { NewNode.new }
@@ -36,7 +38,7 @@ describe "election" do
     end
 
     it "must have an up-to-date log" do
-      
+      pending "need to implement log replication"
     end
 
     it "everyone knows who the new leader is" do
@@ -47,11 +49,18 @@ describe "election" do
     end
 
     it "received majority vote" do
-
+      # expect the count to be greater than majority
+      count = 1
+      f1.get_followers.each do |f|
+        if f.send(:voted_for) == f1
+          count += 1
+        end
+      end
+      expect(count).to > clust/2
     end
 
     it "each server voted for at most one candidate in the given term" do
-
+      # ???
     end
   end
 

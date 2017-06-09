@@ -2,7 +2,7 @@ require 'timers'
 require 'parallel'
 
 # @TODO How to handle election when new leader sends append entry during election
-
+# @TODO Refactor to use request_vote_request, request_vote_response
 class NewNode
   def initialize(leader = nil)
     @current_timer = Timers::Group.new
@@ -114,10 +114,9 @@ class NewNode
   end
 
   ################################
-  # timer thread????
+
   ###### Timer ######
 
-  # Implementation is all janked because of threads to simulate the
   def heartbeat
     # thread?
     Thread.new do
@@ -199,10 +198,13 @@ class NewNode
         while keep_requesting
           if c != self
             ret_term, granted = vote_for(self)
-            if
-            if granted
-              num_votes += 1
-              keep_requesting = false
+            if @current_term < ret_term
+              step_down(ret_term)
+            else
+              if granted
+                num_votes += 1
+                keep_requesting = false
+              end
             end
           end
         end
@@ -229,48 +231,29 @@ class NewNode
       followers.each do |f|
         f.append_entry
       end
-      reset_followers
     end
-  end
-
-  def reset_followers
-    followers = get_followers
-    followers.each do |f|
-      f.reset_voted_for
-    end
-  end
-
-  def reset_voted_for
-    @voted_for = nil
   end
 
   def vote_for(node)
     # need to compare last_log_term and last_log_index
-    if node != self
-      reset_timer
+    leader_term = node.get_current_term
+    if @current_term < leader_term
+      step_down(leader_term)
     end
 
-    vote_passed = false
-
-    return vote_passed if @current_term > node.get_current_term
-
-    if @voted_for == nil || @voted_for == node
+    # @TODO handle last log term and last log index
+    if @current_term == leader_term && (@voted_for == nil || @voted_for == node)
+      vote_granted = true
       @voted_for = node
-      vote_passed = true
-    end
-
-    if node != self
       reset_timer
     end
 
-    @current_term, vote_passed
-  end
 
+    vote_granted = false
 
-  def request_vote_request
-  end
+    return vote_granted if @current_term > node.get_current_term
 
-  def request_vote_response
+    @current_term, vote_granted
   end
   ################################
 
@@ -289,5 +272,5 @@ class NewNode
 
   private
 
-  attr_accessor :cluster, :log
+  attr_accessor :cluster, :log, :voted_for
 end
