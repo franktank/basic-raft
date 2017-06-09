@@ -64,7 +64,7 @@ describe "election" do
     end
   end
 
-  context "another node becomes leader" do
+  context "another node tries to become leader" do
     # Add step down in append_entry
     context "RPC term is larger than candidate's current term" do
       it "current node becomes follower" do
@@ -83,6 +83,11 @@ describe "election" do
         # is there response?
         # append entries response checks for term
         # scary changes coming up
+      end
+
+      it "other node steps down" do
+        # the acclaimed leader realizes it should not be the leader and steps down
+        # expdect to receive :step_down
       end
     end
   end
