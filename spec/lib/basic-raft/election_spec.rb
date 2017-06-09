@@ -24,6 +24,7 @@ describe "election" do
       end
     end
 
+    # Heartbeat establish authority and prevents new election
     it "sends append entries to new followers" do
       # All new followers should have received :append_entry
       f2.become_leader
@@ -34,6 +35,10 @@ describe "election" do
       end
     end
 
+    it "must have an up-to-date log" do
+      
+    end
+
     it "everyone knows who the new leader is" do
       # expect everyone to return the same leader
       clust.each do |c|
@@ -41,18 +46,30 @@ describe "election" do
       end
     end
 
-    it "new leader is not the same leader from past term" do
-      # ??? is this true?
+    it "received majority vote" do
+
+    end
+
+    it "each server voted for at most one candidate in the given term" do
+
     end
   end
 
   context "another node becomes leader" do
-    it "current node becomes follower" do
-      pending "case not handled yet"
+    context "RPC term is larger than candidate's current term" do
+      it "current node becomes follower" do
+        pending "case not handled yet"
+      end
+
+      it "ends the current election" do
+        pending "case not handled yet"
+      end
     end
 
-    it "ends the current election" do
-      pending "case not handled yet"
+    context "RPC term is smaller than candidate's current term" do
+      it "remains a candidate" do
+
+      end
     end
   end
 

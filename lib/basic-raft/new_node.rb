@@ -11,17 +11,15 @@ class NewNode
     @leader_alive = false
     @started_election = false # For case where append entry received from new leader during election
     @voted_for = nil
-    @current_term
+    @current_term = 1
     if leader
       @role = :follower
       leader.handle_new_cluster_member(self)
       start_timer
-      @current_term = leader.get_current_term # ???
     else
       @role = :leader
       add_to_cluster(self)
       heartbeat
-      @current_term = 0 # or 1?
     end
   end
 
@@ -192,9 +190,9 @@ class NewNode
   ####### Election Methods #######
   def start_election
     @started_election = true
+    reset_timer
     @current_term += 1
     num_votes = 0
-    reset_timer
     @cluster.each do |c|
       if c.vote_for(self)
         num_votes += 1
@@ -233,7 +231,13 @@ class NewNode
   end
 
   def vote_for(node)
+    # need to compare last_log_term and last_log_index
+    if node != self
+      reset_timer
+    end
+
     vote_passed = false
+
     return vote_passed if @current_term > node.get_current_term
 
     if @voted_for == nil || @voted_for == node
@@ -241,9 +245,29 @@ class NewNode
       vote_passed = true
     end
 
-    vote_passed
+    if node != self
+      reset_timer
+    end
+
+    current_term, vote_passed
+  end
+
+
+  def request_vote_request
+  end
+
+  def request_vote_response
   end
   ################################
+
+  ##### Helper #####
+  def step_down(term)
+    @current_term = term
+    @role = :follower
+    @voted_for = nil
+    reset_timer
+  end
+  ##################
 
   private
 
