@@ -105,13 +105,20 @@ class NewNode
     leader.receive_entry(msg)
   end
 
-  def append_entry(msg = nil)
+  def append_entry(msg = nil, sender_term)
+    # Check for step down
+    if @current_term < sender_term
+      step_down(sender_term)
+    end
+
     if msg
       @log << msg
     else
       # Reset timer using parallel?
       reset_timer
     end
+
+    @current_term
   end
 
   ################################
@@ -243,13 +250,16 @@ class NewNode
   end
 
   def become_leader
+    bl = false
     if @role == :candidate
+      bl = true
       @role = :leader
       followers = get_followers
       followers.each do |f|
         f.append_entry
       end
     end
+    bl
   end
 
   def vote_for(node)

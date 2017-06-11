@@ -16,7 +16,7 @@ describe "election" do
 
   context "obtains majority votes" do
     before { f1.node_timeout }
-    it "becomes leader", focus: true do
+    it "becomes leader" do
       expect(subject.get_leader).to eq(f1)
     end
 
@@ -27,7 +27,7 @@ describe "election" do
     end
 
     # Heartbeat establish authority and prevents new election
-    it "sends append entries to new followers" do
+    it "sends append entries to new followers", focus: true do
       # All new followers should have received :append_entry
       f2.become_leader
       new_leader = f2.get_leader
@@ -68,12 +68,16 @@ describe "election" do
     # Add step down in append_entry
     context "RPC term is larger than candidate's current term" do
       it "current node becomes follower" do
+        f1.node_timeout
+        # f1.append_entry, make it step down, etc
         pending "case not handled yet"
+        expect(.is_follower?).to eq(true)
       end
 
-      it "ends the current election" do
+      it "prevents current node from becoming leader" do
         pending "case not handled yet"
         # Basically changes role, then unable to become leader, since no longer candidate
+        expect(become_leader).to eq(false)
       end
     end
 
