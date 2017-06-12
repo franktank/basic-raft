@@ -106,9 +106,14 @@ class NewNode
   end
 
   def append_entry(msg = nil, sender_term)
+    # Return a boolean to say successful or not successful
     # Check for step down
     if @current_term < sender_term
       step_down(sender_term)
+    end
+
+    if @current_term > sender_term
+      return @current_term, false
     end
 
     if msg
@@ -118,7 +123,8 @@ class NewNode
       reset_timer
     end
 
-    @current_term
+    return @current_term, true
+    # match index?
   end
 
   ################################
